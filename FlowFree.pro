@@ -5,16 +5,26 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += qml quick
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+#QMAKE_CXXFLAGS += -std=c++11
 
 TARGET = FlowFree
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp
+SOURCES += main.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  +=
 
-FORMS    += mainwindow.ui
+FORMS    +=
+
+DISTFILES += \
+    GridSquare.qml \
+	FlowFreeMainView.qml \
+    main.qml
+
+RESOURCES += \
+    qml.qrc

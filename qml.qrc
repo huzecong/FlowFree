@@ -1,2 +1,7 @@
-<RCC/>
-
+<RCC>
+    <qresource prefix="/">
+        <file>GridSquare.qml</file>
+        <file>main.qml</file>
+        <file>FlowFreeMainView.qml</file>
+    </qresource>
+</RCC>
