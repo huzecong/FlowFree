@@ -15,16 +15,24 @@ TARGET = FlowFree
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    gamelogic.cpp
 
-HEADERS  +=
+HEADERS  += \
+    gamelogic.h
 
 FORMS    +=
 
 DISTFILES += \
-    GridSquare.qml \
 	FlowFreeMainView.qml \
-    main.qml
+    main.qml \
+    GameBoard.qml \
+    GameBoardToggle.js \
+    BoardGrid.qml \
+    BoardCircle.qml \
+    BoardLine.qml \
+    levels/easy-1.txt \
+    levels/medium-1.txt
 
 RESOURCES += \
     qml.qrc

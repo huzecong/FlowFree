@@ -1,7 +1,13 @@
 <RCC>
     <qresource prefix="/">
-        <file>GridSquare.qml</file>
         <file>main.qml</file>
         <file>FlowFreeMainView.qml</file>
+        <file>BoardCircle.qml</file>
+        <file>BoardGrid.qml</file>
+        <file>BoardLine.qml</file>
+        <file>GameBoard.qml</file>
+        <file>GameBoardToggle.js</file>
+        <file>levels/easy-1.txt</file>
+        <file>levels/medium-1.txt</file>
     </qresource>
 </RCC>

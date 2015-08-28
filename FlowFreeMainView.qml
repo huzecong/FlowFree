@@ -1,4 +1,4 @@
-import QtQuick 2.2
+import QtQuick 2.5
 import Material 0.1
 import Material.ListItems 0.1 as ListItem
 import Material.Extras 0.1
@@ -7,6 +7,9 @@ import QtQuick.Layouts 1.2
 
 ApplicationWindow {
 	id: main
+	
+	minimumWidth: Units.dp(400)
+	minimumHeight: Units.dp(400)
 
 	title: qsTr("FlowFree", "app title")
 
@@ -48,11 +51,13 @@ ApplicationWindow {
 	}
 
 	property var sections: [ easyLevels, mediumLevels, hardLevels ]
-
 	property var sectionTitles: [ qsTr("Easy"), qsTr("Medium"), qsTr("Hard") ]
+	property string selectedLevel
 
-	property string selectedLevel: easyLevels[0]
-
+	Component.onCompleted: {
+		selectedLevel = easyLevels[0]
+	}
+	
 	initialPage: Page {
 		id: page
 
@@ -163,14 +168,20 @@ ApplicationWindow {
 			}
 		}
 		
-		Rectangle {
+		GameBoard {
 			id: gameboard
 			anchors {
 				left: sidebar.right
 				right: parent.right
 				top: parent.top
 				bottom: parent.bottom
+				margins: Units.dp(30)
 			}
+			levelName: main.selectedLevel
+            
+            onGameFinished: {
+                gameFinishedDialog.show()
+            }
 		}
 		
 /*
@@ -232,8 +243,9 @@ ApplicationWindow {
 			bottom: snackbar.top
 			margins: Units.dp(32)
 		}
-
 		iconName: "navigation/refresh"
+		
+		onClicked: gameboard.restart()
 	}
 
 	Snackbar {
@@ -249,6 +261,18 @@ ApplicationWindow {
 			console.log("solution shown")
 		}
 	}
+    
+    Dialog {
+        id: gameFinishedDialog
+        title: qsTr("Congratulations!")
+        text: qsTr("You solved this level!")
+        hasActions: true
+        positiveButtonText: qsTr("Next Level")
+        negativeButtonText: qsTr("OK")
+        onAccepted: {
+            console.log("next level")
+        }
+    }
 
 	Dialog {
 		id: settings
