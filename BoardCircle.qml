@@ -15,12 +15,12 @@ Item {
 		State {
 			name: "hidden"
 			PropertyChanges { target: view; scale: 0.0 }
-            PropertyChanges { target: view; visible: false }
+			PropertyChanges { target: view; visible: false }
 		},
 		State {
 			name: "shown"
 			PropertyChanges { target: view; scale: 1.0 }
-            PropertyChanges { target: view; visible: true }
+			PropertyChanges { target: view; visible: true }
 		}
 	]
 	state: "hidden"
@@ -35,7 +35,7 @@ Item {
 		width: (length / 4 * 3) * scale
 		height: width
 		radius: width / 2
-        antialiasing: true
+		antialiasing: true
 		
 		property double scale: 0.0
 		
@@ -50,11 +50,11 @@ Item {
 		Rectangle {
 			id: rect
 			anchors.fill: parent
-            anchors.centerIn: parent
-            width: parent.width + 20
-            height: width
+			anchors.centerIn: parent
+			width: parent.width + 20
+			height: width
 			radius: width / 2
-            antialiasing: true
+			antialiasing: true
 			color: Palette.colors[root.color]["500"]
 		}
 	}

@@ -44,8 +44,8 @@ public:
 		}
 	}
 	double coveredPercent() const {
-        return (double)this->m_coveredCount / (this->m_rows * this->m_columns - this->m_pairs);
-    }
+		return (double)this->m_coveredCount / (this->m_rows * this->m_columns - this->m_pairs);
+	}
 	void setCoveredCount(const int &coveredCount) {
 		if (coveredCount != this->m_coveredCount) {
 			this->m_coveredCount = coveredCount;
@@ -61,8 +61,8 @@ public:
 	Q_INVOKABLE void startPath(int x, int y);	// onPressed
 	Q_INVOKABLE void movePath(int x, int y);	// onPositionChanged
 	Q_INVOKABLE void endPath(int x, int y);		// onReleased
-    
-    Q_INVOKABLE QString colorAt(int x, int y);
+	
+	Q_INVOKABLE QString colorAt(int x, int y);
 
 signals:
 	void loadFinished();
@@ -82,7 +82,7 @@ signals:
 	void playConnectedSound();
 	
 	void gameFinished();
-    void gameNeedFill();        // All pairs are connected, but board is not filled
+	void gameNeedFill();		// All pairs are connected, but board is not filled
 
 private:
 	int index(int x, int y) {
@@ -103,7 +103,7 @@ private:
 	int m_columns, m_rows, m_coveredCount, m_pairs, m_connectedPairs;
 	bool m_connected[colorCnt];
 	QHash<int, QList<QPoint> > m_paths;
-    int m_curColor, m_lastX, m_lastY, m_lastConPairs;
+	int m_curColor, m_lastX, m_lastY, m_lastConPairs;
 	int *m_point, *m_color;
 	bool *m_occupy;
 };

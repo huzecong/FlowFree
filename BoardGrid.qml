@@ -49,26 +49,26 @@ Item {
 			}
 		}
 
-        Ink {
-            id: ink
-            anchors.fill: parent
-            
-            Rectangle {
-                id: rect
-                anchors.fill: parent
-                radius: length / 20
-                opacity: 0.3
-                color: Palette.colors[root.color]["500"]
-        //		border.width: modelData === "white" ? Units.dp(2) : 0
-        //		border.color: Theme.alpha("#000", 0.26)
-                border.width: length / 50
-                border.color: Palette.colors[root.color]["700"]
-                
-                Behavior on color {
-                    ColorAnimation { duration: 100 }
-                }
-            }
-        }
+		Ink {
+			id: ink
+			anchors.fill: parent
+			
+			Rectangle {
+				id: rect
+				anchors.fill: parent
+				radius: length / 20
+				opacity: 0.3
+				color: Palette.colors[root.color]["500"]
+		//		border.width: modelData === "white" ? Units.dp(2) : 0
+		//		border.color: Theme.alpha("#000", 0.26)
+				border.width: length / 50
+				border.color: Palette.colors[root.color]["700"]
+				
+				Behavior on color {
+					ColorAnimation { duration: 100 }
+				}
+			}
+		}
 	}
 }
 

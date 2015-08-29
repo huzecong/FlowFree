@@ -3,10 +3,10 @@ import Material 0.1
 
 Item {
 	id: root
-//    property double length: Units.dp(100)
+//	property double length: Units.dp(100)
 	property double length: gridLength
 	property string color: "red"
-	property bool vertical: true    // false for horizontal
+	property bool vertical: true	// false for horizontal
 	property int posX: 0
 	property int posY: 0
 	x: posX * length
