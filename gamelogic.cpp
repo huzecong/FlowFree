@@ -23,7 +23,7 @@ void GameLogic::clear() {
 		for (int i = 0; i < this->m_rows; ++i)
 			for (int j = 0; j < this->m_columns; ++j) {
 				int id = index(i, j);
-				this->m_color[id] = this->m_point[id];
+				this->m_color[id] = 0;
 				this->m_occupy[id] = false;
 			}
 	}

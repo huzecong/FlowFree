@@ -99,7 +99,7 @@ Item {
 					var y = Math.floor(mouse.x / gridLength)
 					var x = Math.floor(mouse.y / gridLength)
 					var color = logic.colorAt(x, y)
-					console.log(color)
+//					console.log(color)
 					followCircle.color = color
 					followCircle.state = color != "none" ? "shown" : "hidden"
 					logic.startPath(x, y);

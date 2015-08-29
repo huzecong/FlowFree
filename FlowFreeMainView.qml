@@ -11,6 +11,20 @@ ApplicationWindow {
 	Timer {
 		id: __delayTimer
 	}
+    
+    onClosing: {
+        close.accepted = false
+        quitConfirmDialog.show()
+    }
+    
+    Dialog {
+        id: quitConfirmDialog
+        title: qsTr("Are you sure you want to quit?")
+        hasActions: true
+        positiveButtonText: qsTr("Quit")
+        negativeButtonText: qsTr("Cancel")
+        onAccepted: Qt.quit()
+    }
 	
 	function delay(delayTime, cb) {
 		__delayTimer.interval = delayTime;
@@ -155,13 +169,21 @@ ApplicationWindow {
 				enabled: true
 				onTriggered: showSolutionDialog.show()
 			},
-
+/*
 			Action {
 				iconName: "action/settings"
 				name: qsTr("Settings")
 				hoverAnimation: true
 				onTriggered: settings.show()
-			}
+			}*/
+            
+            Action {
+                iconName: "action/exit_to_app"
+                name: qsTr("Quit")
+                enabled: true
+                onTriggered: quitConfirmDialog.show()
+            }
+
 		]
 
 		backAction: navDrawer.action
@@ -349,8 +371,8 @@ ApplicationWindow {
 				onGameFinished: {
 					snackbar.buttonText = isLastLevel() ? qsTr("Start Again") : qsTr("Next Level")
 					snackbar.open(isLastLevel()
-								  ? qsTr("Congratulations! You've solved every puzzle in the game!\nStart again from first level?")
-								  : qsTr("Congratulations! You solved this level!\nProceed to next level?"))
+								  ? qsTr("Congratz! You've solved every puzzle!\nStart again from first level?")
+								  : qsTr("Congratz! You solved this level!\nProceed to next level?"))
 					snackbar.duration = NumberAnimation.Infinite
 				}
 				onGameNeedFill: {

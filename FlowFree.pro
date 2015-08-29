@@ -14,6 +14,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FlowFree
 TEMPLATE = app
 
+VERSION = 1.0
 
 SOURCES += main.cpp \
 	gamelogic.cpp
@@ -68,6 +69,6 @@ macx {
 }
 
 win32 {
-	RC_ICONS = myappico.ico
+        RC_ICONS = icon/icon.ico
 }
 
