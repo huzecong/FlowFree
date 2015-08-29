@@ -9,11 +9,11 @@ using namespace std;
 
 const QString GameLogic::colors[] =
 {"none",
- "red", "pink", "purple", "deepPurple", "indigo",
- "blue", "lightBlue", "cyan", "teal", "green",
- "lightGreen", "lime", "yellow", "amber", "orange",
- "deepOrange", "grey", "blueGrey", "brown", "black",
- "white"};
+ "red", "blue", "teal", "yellow", "orange",
+ "cyan", "pink", "brown", "purple", "lightGreen",
+ "indigo", "blueGrey", "lime", "amber", "deepPurple",
+ "lightBlue", "green", "deepOrange", "black", "white",
+ "grey"};
 
 void GameLogic::clear() {
     emit hideAll();
@@ -27,8 +27,11 @@ void GameLogic::clear() {
                 this->m_occupy[id] = false;
             }
     }
+    memset(this->m_connected, 0, sizeof(bool) * this->colorCnt);
+    this->m_connectedPairs = 0;
     this->m_curColor = 0;
-    this->m_lastX = this->m_lastX = -1;
+    this->m_lastX = this->m_lastY = -1;
+    this->m_lastConPairs = 0;
     this->m_paths.clear();
 }
 
@@ -44,24 +47,40 @@ void GameLogic::loadLevel(QString levelName) {
 	}
 	QTextStream in(&file);
 
-	int _width, _height, _content;
-	in >> _width >> _height;
-	this->setWidth(_width);
-	this->setHeight(_height);
+    int _width, _height, _content;
+    in >> _width >> _height;
+    setWidth(_width);
+    setHeight(_height);
 
-	if (m_point != NULL) delete m_point;
-	m_point = new int[width() * height()];
-	if (m_color != NULL) delete m_color;
-	m_color = new int[width() * height()];
-	if (m_occupy!= NULL) delete m_occupy;
-	m_occupy = new bool[width() * height()];
+    if (m_point != NULL) delete m_point;
+    m_point = new int[width() * height()];
+    if (m_color != NULL) delete m_color;
+    m_color = new int[width() * height()];
+    if (m_occupy!= NULL) delete m_occupy;
+    m_occupy = new bool[width() * height()];
 
-	for (int i = 0; i < height(); ++i)
-		for (int j = 0; j < width(); ++j) {
-			int id = index(i, j);
-			in >> _content;
-			m_point[id] = m_color[id] = _content;
-		}
+    int *colorCheck = new int[this->colorCnt + 1];
+    memset(colorCheck, 0, sizeof(int) * (this->colorCnt + 1));
+    for (int i = 0; i < this->m_rows; ++i)
+        for (int j = 0; j < this->m_columns; ++j) {
+            int id = index(i, j);
+            in >> _content;
+            if (_content < 0 || _content > this->colorCnt) {
+                assert(false);
+            }
+            this->m_point[id] = _content;
+            this->m_color[id] = 0;
+            if (_content != 0) {
+                ++colorCheck[_content];
+            }
+        }
+    this->m_pairs = 0;
+    for (int i = 1; i <= this->colorCnt; ++i) {
+        if (colorCheck[i] == 2) ++this->m_pairs;
+        else if (colorCheck[i] != 0) {
+            assert(false);
+        }
+    }
 
 	emit loadFinished();
 }
@@ -82,23 +101,21 @@ void GameLogic::restart() {
 	emit loadFinished();
 }
 
-void GameLogic::repaint() {
+void GameLogic::repaintLines() {
 	static int rows = 0, columns = 0;
-	static bool *grids, *horLines, *verLines;
+	static bool *horLines, *verLines;
 	if (rows != this->m_rows || columns != this->m_columns) {
 		rows = this->m_rows;
 		columns = this->m_columns;
-		if (grids != NULL) delete grids;
-		grids = new bool[rows * columns];
 		if (horLines != NULL) delete horLines;
 		horLines = new bool[rows * columns];
 		if (verLines != NULL) delete verLines;
 		verLines = new bool[rows * columns];
 	}
-	memset(grids, 0, sizeof(bool) * (rows * columns));
 	memset(horLines, 0, sizeof(bool) * (rows * columns));
 	memset(verLines, 0, sizeof(bool) * (rows * columns));
 	
+    int covered = 0;
 	QHash<int, QList<QPoint> >::iterator it;
 	for (it = this->m_paths.begin(); it != this->m_paths.end(); ++it) {
 		QPoint last(-1, -1);
@@ -106,13 +123,13 @@ void GameLogic::repaint() {
 			int id = index(i->x(), i->y());
 			if (it.key() != this->m_curColor) {
 				if (this->m_occupy[id]) break;
-				emit changeGridColor(i->x(), i->y(), this->colors[it.key()]);
-				grids[id] = true;
 			}
+//            grids[id] = true;
 			if (last.x() >= 0) {
 				int x1 = last.x(), y1 = last.y(), x2 = i->x(), y2 = i->y();
 				if (x1 > x2 || y1 > y2) swap(x1, x2), swap(y1, y2);
 				int id = index(x1, y1);
+                ++covered;
 				if (y2 == y1 + 1) {
 					emit showLine(x1, y1, false, this->colors[it.key()]);
 					horLines[id] = true;
@@ -125,15 +142,12 @@ void GameLogic::repaint() {
 		}
 	}
 	
-	int covered = 0;
 	for (int i = 0; i < rows; ++i)
 		for (int j = 0; j < columns; ++j) {
 			int id = index(i, j);
-			if (grids[id] == false) {
-				emit changeGridColor(i, j, "grey");
-			} else {
-				++covered;
-			}
+//            if (grids[id] == true) {
+//                ++covered;
+//            }
 			if (i + 1 < rows && verLines[id] == false) {
 				emit hideLine(i, j, true);
 			}
@@ -142,6 +156,20 @@ void GameLogic::repaint() {
 			}
 		}
 	setCoveredCount(covered);
+}
+
+void GameLogic::repaintGrids() {
+    int covered = 0;
+	for (int i = 0; i < this->m_rows; ++i)
+		for (int j = 0; j < this->m_columns; ++j) {
+			int id = index(i, j);
+            if (this->m_color[id] == 0) {
+				emit changeGridColor(i, j, "grey");
+			} else {
+                emit changeGridColor(i, j, this->colors[this->m_color[id]]);
+				++covered;
+			}
+        }
 }
 
 void GameLogic::truncatePath(int color, QPoint point) {
@@ -226,7 +254,11 @@ void GameLogic::startPath(int x, int y) {
 	// (x, y) must be valid
 	int id = index(x, y);
 	QPoint curPoint(x, y);
-	this->m_curColor = this->m_color[id];
+    if (this->m_point[id] != 0) {
+        this->m_curColor = this->m_point[id];
+    } else {
+        this->m_curColor = this->m_color[id];
+    }
 	
 	if (this->m_curColor != 0) {
 		// Initialize "occupy" data (occupied by current path)
@@ -248,9 +280,16 @@ void GameLogic::startPath(int x, int y) {
 		}
         emit ripple(it->front().x(), it->front().y());
 		for (QList<QPoint>::iterator i = it->begin(); i != it->end(); ++i) {
-			this->m_occupy[index(i->x(), i->y())] = true;
+            int id = index(i->x(), i->y());
+			this->m_occupy[id] = true;
+            this->m_color[id] = 0;
 		}
 		truncatePath(this->m_curColor, curPoint);
+		
+		if (this->m_connected[this->m_curColor] == true) {
+			this->m_connected[this->m_curColor] = false;
+			--this->m_connectedPairs;
+		}
 		
 //		if (this->m_point[id] != 0 && curPoint != startPoint) {
 			// Not to be handled here, should be in "clicked" event
@@ -259,8 +298,10 @@ void GameLogic::startPath(int x, int y) {
 //		}
         
         this->m_lastX = x, this->m_lastY = y;
+        this->m_lastConPairs = this->m_connectedPairs;
 		
-		repaint();
+		repaintLines();
+        repaintGrids();
 	}
 }
 
@@ -279,29 +320,42 @@ void GameLogic::movePath(int x, int y) {
         
         this->m_lastX = x, this->m_lastY = y;
 		
-		repaint();
+		repaintLines();
 	}
 }
 
 void GameLogic::endPath(int x, int y) {
 	if (this->m_curColor != 0) {
+        int color = this->m_curColor;
+        
 		movePath(x, y);
 		
 		QHash<int, QList<QPoint> >::iterator it = this->m_paths.find(this->m_curColor);
 		if (it->size() > 1 && this->m_point[index(it->back().x(), it->back().y())] == this->m_curColor) {
 			emit ripple(it->front().x(), it->front().y());
 			emit ripple(it->back().x(), it->back().y());
+			this->m_connected[this->m_curColor] = true;
+			++this->m_connectedPairs;
 		}
 		
 		// Save state
+        for (int i = 0; i < this->m_rows; ++i)
+            for (int j = 0; j < this->m_columns; ++j) {
+                int id = index(i, j);
+                this->m_color[id] = 0;
+            }
 		for (it = this->m_paths.begin(); it != this->m_paths.end(); ++it) {
-			if (it.key() == this->m_curColor) continue;
 			for (QList<QPoint>::iterator i = it->begin(); i != it->end(); ++i) {
 				int id = index(i->x(), i->y());
-				if (this->m_occupy[id]) {
+				if (it.key() != this->m_curColor && this->m_occupy[id]) {
 					it->erase(i, it->end());
+					if (this->m_connected[it.key()] == true) {
+						this->m_connected[it.key()] = false;
+						--this->m_connectedPairs;
+					}
 					break;
 				}
+                this->m_color[id] = it.key();
 			}
 		}
 		
@@ -315,14 +369,33 @@ void GameLogic::endPath(int x, int y) {
 			}
 		this->m_curColor = 0;
 		
-		repaint();
+		repaintLines();
+        repaintGrids();
 		
 		if (checkVictory()) {
 			emit gameFinished();
-		}
+		} else if (this->m_connectedPairs == this->m_pairs) {
+            emit gameNeedFill();
+        } else {
+            int cur = (int)this->m_connected[color];
+            if (cur == 1 && this->m_lastConPairs + 1 == this->m_connectedPairs) {
+                emit playConnectedSound();
+            } else if (this->m_lastConPairs + cur > this->m_connectedPairs) {
+                emit playDisconnectedSound();
+            }
+        }
 	}
 }
 
 bool GameLogic::checkVictory() {
-	return this->m_coveredCount == this->m_rows * this->m_columns;
+	return coveredPercent() == 1.0;
+}
+
+QString GameLogic::colorAt(int x, int y) {
+    int id = index(x, y);
+    if (this->m_point[id] != 0) {
+        return this->colors[this->m_point[id]];
+    } else {
+        return this->colors[this->m_color[id]];
+    }
 }

@@ -12,7 +12,7 @@ class GameLogic : public QObject {
 
 	Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
 	Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
-	Q_PROPERTY(int coveredCount READ coveredCount WRITE setCoveredCount NOTIFY coveredCountChanged)
+	Q_PROPERTY(double coveredPercent READ coveredPercent WRITE setCoveredCount NOTIFY coveredPercentChanged)
 
 public:
 	static const int colorCnt = 21;
@@ -43,11 +43,13 @@ public:
 			emit heightChanged(height);
 		}
 	}
-	int coveredCount() const { return m_coveredCount; }
+	double coveredPercent() const {
+        return (double)this->m_coveredCount / (this->m_rows * this->m_columns - this->m_pairs);
+    }
 	void setCoveredCount(const int &coveredCount) {
 		if (coveredCount != this->m_coveredCount) {
 			this->m_coveredCount = coveredCount;
-			emit coveredCountChanged(coveredCount);
+			emit coveredPercentChanged(coveredCount);
 		}
 	}
 
@@ -59,12 +61,14 @@ public:
 	Q_INVOKABLE void startPath(int x, int y);	// onPressed
 	Q_INVOKABLE void movePath(int x, int y);	// onPositionChanged
 	Q_INVOKABLE void endPath(int x, int y);		// onReleased
+    
+    Q_INVOKABLE QString colorAt(int x, int y);
 
 signals:
 	void loadFinished();
 	void widthChanged(int);
 	void heightChanged(int);
-	void coveredCountChanged(int);
+	void coveredPercentChanged(int);
 
 	void hideAll();
 	void ripple(int x, int y);
@@ -74,7 +78,11 @@ signals:
 	void showLine(int x1, int y1, bool vertical, QString color);
 	void hideLine(int x1, int y1, bool vertical);
 	
+	void playDisconnectedSound();
+	void playConnectedSound();
+	
 	void gameFinished();
+    void gameNeedFill();        // All pairs are connected, but board is not filled
 
 private:
 	int index(int x, int y) {
@@ -89,11 +97,13 @@ private:
 	
 	void clear();
 	bool checkVictory();
-	void repaint();
+	void repaintLines();
+	void repaintGrids();
 
-	int m_columns, m_rows, m_coveredCount;
+	int m_columns, m_rows, m_coveredCount, m_pairs, m_connectedPairs;
+	bool m_connected[colorCnt];
 	QHash<int, QList<QPoint> > m_paths;
-    int m_curColor, m_lastX, m_lastY;
+    int m_curColor, m_lastX, m_lastY, m_lastConPairs;
 	int *m_point, *m_color;
 	bool *m_occupy;
 };

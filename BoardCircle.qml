@@ -50,6 +50,9 @@ Item {
 		Rectangle {
 			id: rect
 			anchors.fill: parent
+            anchors.centerIn: parent
+            width: parent.width + 20
+            height: width
 			radius: width / 2
             antialiasing: true
 			color: Palette.colors[root.color]["500"]

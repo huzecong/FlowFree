@@ -7,6 +7,17 @@ import QtQuick.Layouts 1.2
 
 ApplicationWindow {
 	id: main
+    
+    Timer {
+        id: __delayTimer
+    }
+    
+    function delay(delayTime, cb) {
+        __delayTimer.interval = delayTime;
+        __delayTimer.repeat = false;
+        __delayTimer.triggered.connect(cb);
+        __delayTimer.start();
+    }
 	
 	minimumWidth: Units.dp(400)
 	minimumHeight: Units.dp(400)
@@ -20,29 +31,15 @@ ApplicationWindow {
 		tabHighlightColor: "white"
 	}
 
-	property int easyLevelsCnt: 5
-	property int mediumLevelsCnt: 5
-	property int hardLevelsCnt: 5
-	property var easyLevels: createLevels("easy", easyLevelsCnt)
-	property var mediumLevels: createLevels("medium", mediumLevelsCnt)
-	property var hardLevels: createLevels("hard", hardLevelsCnt)
-	function createLevels(prefix, cnt) {
-		var ret = [];
-		var i = 0;
-		for (i = 1; i <= cnt; ++i) {
-			var str = prefix + "-" + String(i);
-			console.log(str);
-			ret.push(str);
-		}
-		return ret;
-	}
+    property int difficultyCnt: 4
+    property var levelsCnt: [ 5, 5, 5, 5 ]
+    property var levelsPrefix: [ "easy", "medium", "hard", "expert" ]
 
 	property var languages: [ "zh_CN", "zh_TW", "en_UK", "ja_JP" ]
 	property var languagesName: createLanguageName(languages)
 	function createLanguageName(languages) {
 		var ret = [];
-		var i = 0;
-		for (i = 0; i < languages.length; ++i) {
+		for (var i = 0; i < languages.length; ++i) {
 			var locale = Qt.locale(languages[i])
 			console.log(locale.nativeLanguageName);
 			ret.push(locale.nativeLanguageName)
@@ -50,14 +47,84 @@ ApplicationWindow {
 		return ret;
 	}
 
-	property var sections: [ easyLevels, mediumLevels, hardLevels ]
-	property var sectionTitles: [ qsTr("Easy"), qsTr("Medium"), qsTr("Hard") ]
-	property string selectedLevel
-
-	Component.onCompleted: {
-		selectedLevel = easyLevels[0]
+	property var sections: createSections()
+    function createSections() {
+        var ret = [];
+        for (var i = 0; i < difficultyCnt; ++i) {
+            var levels = createLevels(levelsPrefix[i], levelsCnt[i])
+            ret.push(levels)
+        }
+        return ret;
+    }
+    function createLevels(prefix, cnt) {
+		var ret = [];
+		for (var i = 1; i <= cnt; ++i) {
+			var str = prefix + "-" + String(i);
+			console.log(str);
+			ret.push(str);
+		}
+		return ret;
 	}
-	
+	property var sectionTitles: [ qsTr("Easy (5x5 and 6x6)"), qsTr("Medium (7x7 and 8x8)"),
+        qsTr("Hard (9x9 and 10x10)"), qsTr("Expert (11x11 and above)") ]
+    property int levelDifficulty: 0
+    property int levelNumber: 0
+    property string selectedLevel//: sections[levelDifficulty][levelNumber]
+        // better set manually
+    
+    onSelectedLevelChanged: {
+        loader.sourceComponent = undefined
+        loader.sourceComponent = gameboardComponent
+        loader.active = true
+    }
+    
+    Component.onCompleted: setLevel()
+    
+    function setLevel() {
+        selectedLevel = sections[levelDifficulty][levelNumber]
+    }
+    
+    function isFirstLevel() {
+        return levelDifficulty == 0 && levelNumber == 0;
+    }
+    
+    function isLastLevel() {
+        return levelDifficulty + 1 == difficultyCnt
+                && levelNumber + 1 == levelsCnt[levelDifficulty];
+    }
+    
+    function nextLevel() {
+        if (isLastLevel()) {
+            levelDifficulty = 0;
+            levelNumber = 0;
+            setLevel();
+            return ;
+        }
+
+        if (levelNumber + 1 == levelsCnt[levelDifficulty]) {
+            ++levelDifficulty;
+            levelNumber = 0;
+        } else {
+            ++levelNumber;
+        }
+        setLevel()
+    }
+    
+    function previousLevel() {
+        if (isFirstLevel()) return ;
+        if (levelNumber == 0) {
+            --levelDifficulty;
+            levelNumber = levelsCnt[levelDifficulty] - 1;
+        } else {
+            --levelNumber;
+        }
+        setLevel()
+    }
+
+/*	Component.onCompleted: {
+		selectedLevel: sections[levelDifficulty][levelNumber]
+	}
+	*/
 	initialPage: Page {
 		id: page
 
@@ -71,13 +138,15 @@ ApplicationWindow {
 			Action {
 				iconName: "navigation/chevron_left"
 				name: qsTr("Previous Level")
-				enabled: false
+				enabled: !isFirstLevel()
+                onTriggered: previousLevel()
 			},
 
 			Action {
 				iconName: "navigation/chevron_right"
 				name: qsTr("Next Level")
-				enabled: true
+				enabled: !isLastLevel()
+                onTriggered: nextLevel()
 			},
 
 			Action {
@@ -97,159 +166,222 @@ ApplicationWindow {
 
 		backAction: navDrawer.action
 
+        property int levelColumns: Math.min(5, Math.max(3, Math.floor(page.width / 200)))
+        
 		NavigationDrawer {
 			id: navDrawer
-			width: Units.gu(3)
+			width: Units.gu(page.levelColumns)
 
-			enabled: page.width < Units.dp(700)
+			enabled: page.width < Units.dp(750)
 
 			Flickable {
+                id: navBarFlickable
 				anchors.fill: parent
 				contentHeight: Math.max(navBarContent.implicitHeight, height)
 
-				Column {
+                Column {
 					id: navBarContent
 					anchors.fill: parent
 
 					Repeater {
 						model: sections
-						delegate: Column {
+                        delegate: ColumnLayout {
 							width: parent.width
-
+                            
 							ListItem.Subheader {
+                                id: navBarHeader
 								text: sectionTitles[index]
 							}
-							Repeater {
-								model: modelData
-								delegate: ListItem.Standard {
-									text: index + 1
-									selected: main.selectedLevel == modelData
-									onClicked: main.selectedLevel = modelData
-								}
+                            
+                            Grid {
+                                id: navBarGrid
+                                
+                                Layout.alignment: Qt.AlignHCenter
+                                anchors.top: navBarHeader.bottom
+                                width: parent.width - Units.dp(10)
+                                columns: page.levelColumns
+                                spacing: Units.dp(10)
+                                property int curDifficulty: index
+                                
+                                Repeater {
+                                    model: modelData
+                                    delegate: ClickableSquare {
+                                        text: index + 1
+                                        onClicked: {
+                                            main.levelDifficulty = navBarGrid.curDifficulty
+                                            main.levelNumber = index
+                                            main.setLevel()
+                                        }
+                                        selected: main.levelDifficulty == navBarGrid.curDifficulty
+                                            && main.levelNumber == index
+                                    }
+                                }
 							}
 						}
 					}
 				}
 			}
+            Scrollbar {
+                flickableItem: navBarFlickable
+            }
 		}
 		
 		Sidebar {
 			id: sidebar
-			width: Units.gu(3)
+			width: Units.gu(page.levelColumns)
 			expanded: !navDrawer.enabled
-
-			Flickable {
-				anchors.fill: parent
-				contentHeight: Math.max(sidebarContent.implicitHeight, height)
-
-				Column {
-					id: sidebarContent
-					anchors.fill: parent
-
-					Repeater {
-						model: sections
-						delegate: Column {
-							width: parent.width
-
-							ListItem.Subheader {
-								text: sectionTitles[index]
-							}
-							Repeater {
-								model: modelData
-								delegate: ListItem.Standard {
-									text: index + 1
-									selected: main.selectedLevel == modelData
-									onClicked: main.selectedLevel = modelData
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		GameBoard {
-			id: gameboard
-			anchors {
-				left: sidebar.right
-				right: parent.right
-				top: parent.top
-				bottom: parent.bottom
-				margins: Units.dp(30)
-			}
-			levelName: main.selectedLevel
             
-            onGameFinished: {
-                gameFinishedDialog.show()
-            }
-		}
-		
-/*
-		TabView {
-			id: tabView
-			anchors.fill: parent
-			currentIndex: page.selectedTab
-			model: sections
+            Column {
+                width: parent.width
 
-			delegate: Item {
-				width: tabView.width
-				height: tabView.height
-				clip: true
-
-				property string selectedComponent: modelData[0]
-
-				
-				Flickable {
-					id: flickable
-					anchors {
-						left: sidebar.right
-						right: parent.right
-						top: parent.top
-						bottom: parent.bottom
-					}
-					clip: true
-					contentHeight: Math.max(example.implicitHeight + 40, height)
-					Loader {
-						id: example
-						anchors.fill: parent
-						asynchronous: true
-						visible: status == Loader.Ready
-						// selectedComponent will always be valid, as it defaults to the first component
-						source: {
-							if (navDrawer.enabled) {
-								return Qt.resolvedUrl("%1Demo.qml").arg(demo.selectedComponent.replace(" ", ""))
-							} else {
-								return Qt.resolvedUrl("%1Demo.qml").arg(selectedComponent.replace(" ", ""))
-							}
-						}
-					}
-
-					ProgressCircle {
-						anchors.centerIn: parent
-						visible: example.status == Loader.Loading
-					}
-				}
-				Scrollbar {
-					flickableItem: flickable
+                Repeater {
+                    id: repeater
+                    model: sections
+                    
+                    delegate: ColumnLayout {
+                        width: parent.width
+                        
+                        ListItem.Subheader {
+                            id: sidebarHeader
+                            text: sectionTitles[index]
+                        }
+                        
+                        Grid {
+                            id: sidebarGrid
+                            
+                            Layout.alignment: Qt.AlignHCenter
+                            anchors.top: sidebarHeader.bottom
+                            width: parent.width - Units.dp(10)
+                            columns: page.levelColumns
+                            spacing: Units.dp(10)
+                            property int curDifficulty: index
+                            
+                            Repeater {
+                                model: modelData
+                                delegate: ClickableSquare {
+                                    text: index + 1
+                                    onClicked: {
+                                        main.levelDifficulty = sidebarGrid.curDifficulty
+                                        main.levelNumber = index
+                                        loader.active = false
+                                        delay(main.levelDifficulty * 150, main.setLevel)
+                                    }
+                                    selected: main.levelDifficulty == sidebarGrid.curDifficulty
+                                        && main.levelNumber == index
+                                }
+                            }
+                        }
+                    }
 				}
 			}
 		}
-		*/
-	}
-
-	ActionButton {
-		anchors {
-			right: parent.right
-			bottom: snackbar.top
-			margins: Units.dp(32)
-		}
-		iconName: "navigation/refresh"
 		
-		onClicked: gameboard.restart()
-	}
-
-	Snackbar {
-		id: snackbar
+        Loader {
+            id: loader
+            
+            anchors {
+                left: sidebar.right
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                margins: Units.dp(30)
+            }
+            asynchronous: true
+            active: false
+            visible: status == Loader.Ready
+            
+            sourceComponent: undefined
+        }
+        
+        Item {
+            anchors {
+                left: sidebar.right
+                right: parent.right
+                top: parent.top
+                bottom: parent.bottom
+                margins: Units.dp(30)
+            }
+            ProgressCircle {
+                id: progressCircle
+                
+                anchors.centerIn: parent
+                visible: loader.status != Loader.Ready
+                width: Math.min(parent.width, parent.height) * 0.15
+                height: width
+                dashThickness: width / 10
+                
+                indeterminate: false
+                minimumValue: 0
+                maximumValue: 100
+                
+                SequentialAnimation on value {
+                    running: progressCircle.visible
+//                    loops: NumberAnimation.Infinite
+    
+                    NumberAnimation {
+                        duration: __delayTimer.interval
+                        from: progressCircle.minimumValue
+                        to: progressCircle.maximumValue
+                    }
+                }
+                
+                Label {
+                    font.pixelSize: progressCircle.width * 0.24
+                    anchors.centerIn: parent
+                    text: Math.round(progressCircle.value) + "%"
+                }
+            }
+        }
+        
+        Component {
+            id: gameboardComponent
+            GameBoard {
+                id: gameboard
+                anchors {
+                    left: sidebar.right
+                    right: page.right
+                    top: page.top
+                    bottom: page.bottom
+                    margins: Units.dp(30)
+                }
+                levelName: main.selectedLevel
+                
+                onGameFinished: {
+                    snackbar.buttonText = isLastLevel() ? qsTr("Start Again") : qsTr("Next Level")
+                    snackbar.open(isLastLevel()
+                                  ? qsTr("Congratulations! You've solved every puzzle in the game!\nStart again from first level?")
+                                  : qsTr("Congratulations! You solved this level!\nProceed to next level?"))
+                    snackbar.duration = NumberAnimation.Infinite
+                }
+                onGameNeedFill: {
+                    snackbar.buttonText = ""
+                    snackbar.duration = 4000
+                    snackbar.open(qsTr("Almost there...\nYou still need to fill the whole board :("))
+                }
+                onPressed: snackbar.opened = false
+                
+                Snackbar {
+                    id: snackbar
+                    
+                    onClicked: nextLevel()
+                }
+                
+                ActionButton {
+                    id: actionButton
+                    
+                    anchors {
+                        right: parent.right
+                        bottom: snackbar.top
+                        margins: Units.dp(20)
+                    }
+                    iconName: "navigation/refresh"
+                    
+                    onClicked: gameboard.restart()
+                    
+                    isMiniSize: navDrawer.enabled
+                }
+            }
+        }
 	}
 
 	Dialog {

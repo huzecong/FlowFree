@@ -5,9 +5,33 @@
         <file>BoardCircle.qml</file>
         <file>BoardGrid.qml</file>
         <file>BoardLine.qml</file>
+        <file>FollowMouseCircle.qml</file>
         <file>GameBoard.qml</file>
         <file>GameBoardToggle.js</file>
         <file>levels/easy-1.txt</file>
         <file>levels/medium-1.txt</file>
+        <file>ClickableSquare.qml</file>
+        <file>levels/easy-2.txt</file>
+        <file>levels/easy-3.txt</file>
+        <file>levels/easy-4.txt</file>
+        <file>levels/easy-5.txt</file>
+        <file>levels/expert-1.txt</file>
+        <file>levels/hard-1.txt</file>
+        <file>sound/Blow.wav</file>
+        <file>sound/Hero.wav</file>
+        <file>sound/Pop.wav</file>
+        <file>sound/Submarine.wav</file>
+        <file>levels/expert-2.txt</file>
+        <file>levels/expert-3.txt</file>
+        <file>levels/expert-4.txt</file>
+        <file>levels/expert-5.txt</file>
+        <file>levels/hard-2.txt</file>
+        <file>levels/hard-3.txt</file>
+        <file>levels/hard-4.txt</file>
+        <file>levels/hard-5.txt</file>
+        <file>levels/medium-2.txt</file>
+        <file>levels/medium-3.txt</file>
+        <file>levels/medium-4.txt</file>
+        <file>levels/medium-5.txt</file>
     </qresource>
 </RCC>

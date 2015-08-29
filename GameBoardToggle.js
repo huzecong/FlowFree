@@ -136,6 +136,13 @@ function hideLine(x1, y1, vertical) {
 	}
 }
 
+function changeGridColor(x, y, color) {
+    var id = index(x, y);
+    if (grids[id] != null) {
+        grids[id].color = color;
+    }
+}
+
 function ripple(x, y) {
 	var id = index(x, y);
 	if (grids[id] != null) {
