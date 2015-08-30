@@ -11,8 +11,10 @@ This project uses [qml-material](https://github.com/papyros/qml-material), the M
 FlowFree is a game connecting dots by pipes. No two pipes can intersect or overlap.
 
 You can get a glimpse of the game's mechanics through the GIF below:
+![intro-1](https://raw.githubusercontent.com/huzecong/FlowFree/master/doc/image/intro-1.gif)
 
 Also the game features an Auto-solve function, implementing a fast solving algorithm. You can see it in action below:
+![intro-2](https://raw.githubusercontent.com/huzecong/FlowFree/master/doc/image/intro-2.gif)
 
 # Licensing
 

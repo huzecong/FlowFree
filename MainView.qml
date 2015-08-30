@@ -454,9 +454,10 @@ ApplicationWindow {
 				
 				onGameFinished: {
 					snackbar.buttonText = levelDifficulty < 0 ? "" : (isLastLevel() ? qsTr("Start Again") : qsTr("Next Level"))
-					snackbar.open(isLastLevel()
+                    snackbar.open(levelDifficulty < 0 ? qsTr("Congratz! You solved this level!")
+                                : (isLastLevel()
 								  ? qsTr("Congratz! You've solved every puzzle!\nStart again from first level?")
-								  : qsTr("Congratz! You solved this level!\nProceed to next level?"))
+								  : qsTr("Congratz! You solved this level!\nProceed to next level?")))
 					snackbar.duration = NumberAnimation.Infinite
 				}
 				onGameNeedFill: {
