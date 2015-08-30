@@ -4,8 +4,7 @@
 #include <QQmlEngine>
 #include "gamelogic.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	QGuiApplication app(argc, argv);
 
 	QUrl source = QUrl(QStringLiteral("qrc:///main.qml"));

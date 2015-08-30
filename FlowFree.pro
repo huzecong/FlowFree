@@ -18,11 +18,11 @@ VERSION = 1.0
 
 SOURCES += main.cpp \
 	gamelogic.cpp \
-    gamesolver.cpp
+	gamesolver.cpp
 
 HEADERS  += \
 	gamelogic.h \
-    gamesolver.h
+	gamesolver.h
 
 FORMS    +=
 
@@ -61,8 +61,8 @@ DISTFILES += \
 	sound/Blow.wav \
 	FollowMouseCircle.qml \
 	icon/icon.ico \
-    HelpDialog.qml \
-    MainView.qml \
+	HelpDialog.qml \
+	MainView.qml \
 
 RESOURCES += \
 	qml.qrc
@@ -72,6 +72,6 @@ macx {
 }
 
 win32 {
-        RC_ICONS = icon/icon.ico
+		RC_ICONS = icon/icon.ico
 }
 

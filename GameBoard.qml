@@ -19,22 +19,22 @@ Item {
 	signal pressed()
 	signal gameFinished()
 	signal gameNeedFill()
-    signal solveFinished(int time)
-    signal loadFailed(string message)
+	signal solveFinished(int time)
+	signal loadFailed(string message)
 	
 	function restart() {
 		logic.restart()
-        finished = false
+		finished = false
 	}
-    function solve() {
-        logic.solve()
-    }
-    function canSolve() {
-        return logic.canSolve()
-    }
-    function abortSolve() {
-        logic.abortSolve()
-    }
+	function solve() {
+		logic.solve()
+	}
+	function canSolve() {
+		return logic.canSolve()
+	}
+	function abortSolve() {
+		logic.abortSolve()
+	}
 	
 	SoundEffect {
 		id: needFillSound
@@ -62,20 +62,20 @@ Item {
 			Toggle.createBoard(n, m, gridLength)
 			logic.displayCircles()
 		}
-        onLoadFailed: {
-            console.log("load failed")
-            root.loadFailed(message)
-            root.finished = true
-        }
-        
-        onNoSolution: {
-            console.log("no solution")
-        }
-        onSolveFinished: {
-            root.solveFinished(time)
-            root.finished = true
-        }
-        
+		onLoadFailed: {
+			console.log("load failed")
+			root.loadFailed(message)
+			root.finished = true
+		}
+		
+		onNoSolution: {
+			console.log("no solution")
+		}
+		onSolveFinished: {
+			root.solveFinished(time)
+			root.finished = true
+		}
+		
 		onHideAll: Toggle.hideAll()
 		onRipple: Toggle.ripple(x, y)
 		onChangeGridColor: Toggle.changeGridColor(x, y, color)
@@ -135,20 +135,20 @@ Item {
 			}
 			
 			onPositionChanged: {
-                if (!root.finished) {
-                    var y = Math.floor(mouse.x / gridLength)
-                    var x = Math.floor(mouse.y / gridLength)
-                    logic.movePath(x, y);
-                }
+				if (!root.finished) {
+					var y = Math.floor(mouse.x / gridLength)
+					var x = Math.floor(mouse.y / gridLength)
+					logic.movePath(x, y);
+				}
 			}
 			
 			onReleased: {
-                if (!root.finished) {
-                    var y = Math.floor(mouse.x / gridLength)
-                    var x = Math.floor(mouse.y / gridLength)
-                    logic.endPath(x, y);
-                    followCircle.state = "hidden"
-                }
+				if (!root.finished) {
+					var y = Math.floor(mouse.x / gridLength)
+					var x = Math.floor(mouse.y / gridLength)
+					logic.endPath(x, y);
+					followCircle.state = "hidden"
+				}
 			}
 		}
 	}

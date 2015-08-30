@@ -10,20 +10,20 @@ ApplicationWindow {
 	id: main
 	
 	onClosing: {
-        close.accepted = false
-        quitConfirmDialog.show()
-    }
-    
-    Dialog {
-        id: quitConfirmDialog
-        title: qsTr("Confirm quit", "quit dialog")
-        text: qsTr("Are you sure you want to quit?")
-        hasActions: true
-        onAccepted: Qt.quit()
-    }
+		close.accepted = false
+		quitConfirmDialog.show()
+	}
+	
+	Dialog {
+		id: quitConfirmDialog
+		title: qsTr("Confirm quit", "quit dialog")
+		text: qsTr("Are you sure you want to quit?")
+		hasActions: true
+		onAccepted: Qt.quit()
+	}
 	
 	function delay(delayTime, cb) {
-        var delayTimer = Qt.createQmlObject('import QtQuick 2.0; Timer { }', main);
+		var delayTimer = Qt.createQmlObject('import QtQuick 2.0; Timer { }', main);
 		delayTimer.interval = delayTime;
 		delayTimer.repeat = false;
 		delayTimer.triggered.connect(cb);
@@ -131,83 +131,83 @@ ApplicationWindow {
 		}
 		setLevel()
 	}
-    
-    Dialog {
-        id: solvingDialog
-        title: qsTr("Solving...")
-//        text: qsTr("This may take a while")
-        negativeButtonText: qsTr("Abort")
-        positiveButton.visible: false
-        
-        hasActions: false
-        dismissOnTap: false
-        
-        property alias customText: label.text
-        
-        RowLayout {
-            spacing: Units.dp(20)
-            ProgressCircle {
-                indeterminate: true
-                width: Units.dp(50)
-                height: Units.dp(50)
-                dashThickness: Units.dp(5)
-            }
-            Label {
-                id: label
-                text: qsTr("This may take a while...")
-                style: "dialog"
-                Layout.alignment: Qt.AlignVCenter
-            }
-        }
+	
+	Dialog {
+		id: solvingDialog
+		title: qsTr("Solving...")
+//		text: qsTr("This may take a while")
+		negativeButtonText: qsTr("Abort")
+		positiveButton.visible: false
+		
+		hasActions: false
+		dismissOnTap: false
+		
+		property alias customText: label.text
+		
+		RowLayout {
+			spacing: Units.dp(20)
+			ProgressCircle {
+				indeterminate: true
+				width: Units.dp(50)
+				height: Units.dp(50)
+				dashThickness: Units.dp(5)
+			}
+			Label {
+				id: label
+				text: qsTr("This may take a while...")
+				style: "dialog"
+				Layout.alignment: Qt.AlignVCenter
+			}
+		}
 
-        onRejected: {
-            loader.item.snackbar.duration = 2000
-            loader.item.snackbar.open("Auto-solve process canceled")
-            loader.item.abortSolve()
-        }
-    }
-    
-    Dialog {
+		onRejected: {
+			loader.item.snackbar.duration = 2000
+			loader.item.snackbar.open("Auto-solve process canceled")
+			loader.item.abortSolve()
+		}
+	}
+	
+	Dialog {
 		id: showSolutionDialog
 		title: qsTr("Confirm", "show solution dialog")
 		text: qsTr("Are you sure you want to show the solution?")
 		hasActions: true
 		onAccepted: {
-            solvingDialog.show()
-            delay(200, loader.item.solve)
+			solvingDialog.show()
+			delay(200, loader.item.solve)
 		}
 	}
-    
-    Dialog {
-        id: cannotSolveDialog
-        title: qsTr("Level too complex")
-        text: qsTr("This level is too complex to be solved. Sorry :(")
-        positiveButton.visible: false
-        negativeButtonText: "OK"
-    }
-    
-    function trySolve() {
-        if (loader.item.canSolve()) {
-            showSolutionDialog.show()
-        } else {
-            cannotSolveDialog.show()
-        }
-    }
-    
-    HelpDialog {
-        id: helpDialog
-    }
-    
-    QuickDialogs.FileDialog {
-        id: fileDialog
-        title: "Select custom level data file"
-        onAccepted: {
-            console.log(fileDialog.fileUrl)
-            main.selectedLevel = fileDialog.fileUrl
-            main.levelDifficulty = -1
-        }
-    }
-    
+	
+	Dialog {
+		id: cannotSolveDialog
+		title: qsTr("Level too complex")
+		text: qsTr("This level is too complex to be solved. Sorry :(")
+		positiveButton.visible: false
+		negativeButtonText: "OK"
+	}
+	
+	function trySolve() {
+		if (loader.item.canSolve()) {
+			showSolutionDialog.show()
+		} else {
+			cannotSolveDialog.show()
+		}
+	}
+	
+	HelpDialog {
+		id: helpDialog
+	}
+	
+	QuickDialogs.FileDialog {
+		id: fileDialog
+		title: "Select custom level data file"
+		onAccepted: {
+			console.log(fileDialog.fileUrl)
+			main.selectedLevel = fileDialog.fileUrl
+			main.levelDifficulty = -1
+		}
+	}
+	
 	initialPage: Page {
 		id: page
 
@@ -231,13 +231,13 @@ ApplicationWindow {
 				enabled: levelDifficulty >= 0 && !isLastLevel()
 				onTriggered: nextLevel()
 			},
-            
-            Action {
-                iconName: "file/folder_open"
-                name: qsTr("Load Custom Level")
-                enabled: true
-                onTriggered: fileDialog.open()
-            },
+			
+			Action {
+				iconName: "file/folder_open"
+				name: qsTr("Load Custom Level")
+				enabled: true
+				onTriggered: fileDialog.open()
+			},
 
 			Action {
 				iconName: "action/assignment"
@@ -245,13 +245,13 @@ ApplicationWindow {
 				enabled: true
 				onTriggered: trySolve()
 			},
-            
-            Action {
-                iconName: "action/help"
-                name: qsTr("Instructions")
-                enabled: true
-                onTriggered: helpDialog.show()
-            },
+			
+			Action {
+				iconName: "action/help"
+				name: qsTr("Instructions")
+				enabled: true
+				onTriggered: helpDialog.show()
+			},
 
 /*
 			Action {
@@ -260,13 +260,13 @@ ApplicationWindow {
 				hoverAnimation: true
 				onTriggered: settings.show()
 			}*/
-            
-            Action {
-                iconName: "action/exit_to_app"
-                name: qsTr("Quit")
-                enabled: true
-                onTriggered: quitConfirmDialog.show()
-            }
+			
+			Action {
+				iconName: "action/exit_to_app"
+				name: qsTr("Quit")
+				enabled: true
+				onTriggered: quitConfirmDialog.show()
+			}
 		]
 
 		backAction: navDrawer.action
@@ -369,7 +369,7 @@ ApplicationWindow {
 										main.levelDifficulty = sidebarGrid.curDifficulty
 										main.levelNumber = index
 										loader.active = false
-                                        delay(levelDifficulty >= 2 ? 100 : 10, main.setLevel)
+										delay(levelDifficulty >= 2 ? 100 : 10, main.setLevel)
 									}
 									selected: main.levelDifficulty == sidebarGrid.curDifficulty
 										&& main.levelNumber == index
@@ -421,10 +421,10 @@ ApplicationWindow {
 				
 				SequentialAnimation on value {
 					running: progressCircle.visible
-//                    loops: NumberAnimation.Infinite
+//					loops: NumberAnimation.Infinite
 	
 					NumberAnimation {
-                        duration: levelDifficulty >= 2 ? 150 : 50
+						duration: levelDifficulty >= 2 ? 150 : 50
 						from: progressCircle.minimumValue
 						to: progressCircle.maximumValue
 					}
@@ -450,10 +450,10 @@ ApplicationWindow {
 					margins: Units.dp(30)
 				}
 				levelName: main.selectedLevel
-                property alias snackbar: snackbar
+				property alias snackbar: snackbar
 				
 				onGameFinished: {
-                    snackbar.buttonText = levelDifficulty < 0 ? "" : (isLastLevel() ? qsTr("Start Again") : qsTr("Next Level"))
+					snackbar.buttonText = levelDifficulty < 0 ? "" : (isLastLevel() ? qsTr("Start Again") : qsTr("Next Level"))
 					snackbar.open(isLastLevel()
 								  ? qsTr("Congratz! You've solved every puzzle!\nStart again from first level?")
 								  : qsTr("Congratz! You solved this level!\nProceed to next level?"))
@@ -465,19 +465,19 @@ ApplicationWindow {
 					snackbar.open(qsTr("Almost there...\nYou still need to fill the whole board :("))
 				}
 				onPressed: snackbar.opened = false
-                onSolveFinished: {
-                    solvingDialog.close()
-                    snackbar.buttonText = ""
-                    snackbar.duration = 4000
-                    snackbar.open(qsTr("Solution found in %1 ms").arg(time))
-                }
-                
-                onLoadFailed: {
-                    loadFailedDialog.text = message
-                    loadFailedDialog.show()
-                }
+				onSolveFinished: {
+					solvingDialog.close()
+					snackbar.buttonText = ""
+					snackbar.duration = 4000
+					snackbar.open(qsTr("Solution found in %1 ms").arg(time))
+				}
 				
-                Snackbar {
+				onLoadFailed: {
+					loadFailedDialog.text = message
+					loadFailedDialog.show()
+				}
+				
+				Snackbar {
 					id: snackbar
 					
 					onClicked: nextLevel()
@@ -501,13 +501,13 @@ ApplicationWindow {
 		}
 	}
 	
-    Dialog {
-        id: loadFailedDialog
-        title: qsTr("Load failed")
-        negativeButtonText: "OK"
-        positiveButton.visible: false
-    }
-   /* 
+	Dialog {
+		id: loadFailedDialog
+		title: qsTr("Load failed")
+		negativeButtonText: "OK"
+		positiveButton.visible: false
+	}
+/* 
 	Dialog {
 		id: settings
 		title: qsTr("Settings", "settings dialog")
@@ -563,7 +563,7 @@ ApplicationWindow {
 			}
 		}
 	}
-    */
+*/
 /*
 	Dialog {
 		id: colorPicker
