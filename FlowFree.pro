@@ -17,15 +17,16 @@ TEMPLATE = app
 VERSION = 1.0
 
 SOURCES += main.cpp \
-	gamelogic.cpp
+	gamelogic.cpp \
+    gamesolver.cpp
 
 HEADERS  += \
-	gamelogic.h
+	gamelogic.h \
+    gamesolver.h
 
 FORMS    +=
 
 DISTFILES += \
-	FlowFreeMainView.qml \
 	main.qml \
 	GameBoard.qml \
 	GameBoardToggle.js \
@@ -59,7 +60,9 @@ DISTFILES += \
 	sound/Hero.wav \
 	sound/Blow.wav \
 	FollowMouseCircle.qml \
-	icon/icon.ico
+	icon/icon.ico \
+    HelpDialog.qml \
+    MainView.qml \
 
 RESOURCES += \
 	qml.qrc

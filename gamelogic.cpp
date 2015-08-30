@@ -11,7 +11,7 @@ const QString GameLogic::colors[] =
 {"none",
  "red", "blue", "teal", "yellow", "orange",
  "cyan", "pink", "brown", "purple", "lightGreen",
- "indigo", "blueGrey", "lime", "amber", "deepPurple",
+ "indigo", "blueGrey", "lime", "deepPurple", "amber",
  "lightBlue", "green", "deepOrange", "black", "white",
  "grey"};
 
@@ -38,11 +38,21 @@ void GameLogic::clear() {
 void GameLogic::loadLevel(QString levelName) {
 	clear();
 
-	QString url(":/levels/" + levelName + ".txt");
+	QString url(levelName);
+    if (url.startsWith(":")) {
+        // qrc
+    } else if (url.startsWith("file:///")) {
+        // OS X or Windows
+        url.remove("file://");
+        if (url.contains(":")) {
+            // Windows
+            url.remove(0, 1);
+        }
+    }
 	qDebug() << url;
 	QFile file(url);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		QMessageBox::critical(0, "Critical failure", "Failed to load level data");
+		emit loadFailed(QString("Failed to open file\nError: %2 (code:%1)").arg(file.errorString(), file.error()));
 		return ;
 	}
 	QTextStream in(&file);
@@ -66,7 +76,8 @@ void GameLogic::loadLevel(QString levelName) {
 			int id = index(i, j);
 			in >> _content;
 			if (_content < 0 || _content > this->colorCnt) {
-				assert(false);
+				emit loadFailed("Level data invalid");
+                return ;
 			}
 			this->m_point[id] = _content;
 			this->m_color[id] = 0;
@@ -78,9 +89,15 @@ void GameLogic::loadLevel(QString levelName) {
 	for (int i = 1; i <= this->colorCnt; ++i) {
 		if (colorCheck[i] == 2) ++this->m_pairs;
 		else if (colorCheck[i] != 0) {
-			assert(false);
+			emit loadFailed("Level data invalid");
+            return ;
 		}
 	}
+    
+    if (in.status() != QTextStream::Ok) {
+        emit loadFailed("Level data invalid");
+        return ;
+    }
 
 	emit loadFinished();
 }
@@ -398,4 +415,65 @@ QString GameLogic::colorAt(int x, int y) {
 	} else {
 		return this->colors[this->m_color[id]];
 	}
+}
+
+bool GameLogic::canSolve() {
+    return this->m_pairs <= 13 && this->m_columns <= 16;
+}
+
+void GameLogic::__showCircle(int x, int y, int color) {
+    emit changeGridColor(x, y, this->colors[color]);
+    if (this->m_point[index(x, y)] == color) {
+        emit showCircle(x, y, this->colors[color]);
+    }
+}
+
+void GameLogic::__showLine(int x1, int y1, bool vertical, int color) {
+    emit showLine(x1, y1, vertical, this->colors[color]);
+}
+
+void GameLogic::solve() {
+    /*
+    this->m_solver.init(this->m_rows, this->m_columns);
+    for (int i = 0; i < this->m_rows; ++i)
+        for (int j = 0; j < this->m_columns; ++j) {
+            int id = index(i, j);
+            if (this->m_point[id] != 0) {
+                this->m_solver.setBoardColor(i, j, this->m_point[id]);
+            }
+        }
+        */
+    
+    emit __solverInit(this->m_rows, this->m_columns);
+    for (int i = 0; i < this->m_rows; ++i)
+        for (int j = 0; j < this->m_columns; ++j) {
+            int id = index(i, j);
+            if (this->m_point[id] != 0) {
+                emit __solverSetBoardColor(i, j, this->m_point[id]);
+            }
+        }
+    
+    emit __startSolverThread();
+//    this->m_solver.solve();
+}
+
+void GameLogic::__loadSolution() {
+    restart();
+    emit __solverShowSolution();
+}
+
+void GameLogic::__solveFinished(int time) {
+    emit solveFinished(time);
+}
+
+void GameLogic::abortSolve() {
+    assert(false && "unimplemented");
+    /*
+    this->m_solverThread->terminate();
+    this->m_solverThread->wait();
+    delete this->m_solverThread;
+    this->m_solverThread = NULL;
+    delete this->m_solver;
+    this->m_solver = NULL;
+    */
 }

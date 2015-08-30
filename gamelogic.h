@@ -6,6 +6,8 @@
 #include <QList>
 #include <QString>
 #include <QPoint>
+#include <QThread>
+#include "gamesolver.h"
 
 class GameLogic : public QObject {
 	Q_OBJECT
@@ -24,10 +26,38 @@ public:
 		this->m_color = NULL;
 		this->m_occupy = NULL;
 		this->m_point = NULL;
+ //       this->m_solver = NULL;
+//        this->m_solverThread = NULL;
 		this->m_lastX = this->m_lastY = -1;
 		for (int i = 1; i <= colorCnt; ++i)
 			this->colorMap[colors[i]] = i;
+        
+        this->m_solver.moveToThread(&this->m_solverThread);
+        this->m_solverThread.start();
+        
+        QObject::connect(this, SIGNAL(__startSolverThread()), &this->m_solver, SLOT(solve()), Qt::QueuedConnection);
+        QObject::connect(&this->m_solver, SIGNAL(paintGrid(int,int,int)), this, SLOT(__showCircle(int,int,int)), Qt::QueuedConnection);
+        QObject::connect(&this->m_solver, SIGNAL(paintLine(int,int,bool,int)), this, SLOT(__showLine(int,int,bool,int)), Qt::QueuedConnection);
+        QObject::connect(&this->m_solver, SIGNAL(noSolution()), this, SIGNAL(noSolution()), Qt::QueuedConnection);
+        QObject::connect(&this->m_solver, SIGNAL(solutionFound()), this, SLOT(__loadSolution()), Qt::QueuedConnection);
+        QObject::connect(&this->m_solver, SIGNAL(solveFinished(int)), this, SLOT(__solveFinished(int)), Qt::QueuedConnection);
+        
+        QObject::connect(this, SIGNAL(__solverInit(int,int)), &this->m_solver, SLOT(init(int,int)), Qt::QueuedConnection);
+        QObject::connect(this, SIGNAL(__solverSetBoardColor(int,int,int)), &this->m_solver, SLOT(setBoardColor(int,int,int)), Qt::QueuedConnection);
+        QObject::connect(this, SIGNAL(__solverShowSolution()), &this->m_solver, SLOT(showSolution()), Qt::QueuedConnection);
 	}
+    ~GameLogic() {
+        delete this->m_color;
+        delete this->m_occupy;
+        delete this->m_point;
+/*      // Let them flow by
+        if (this->m_solverThread != NULL) {
+            this->m_solverThread->terminate();
+        }
+        delete this->m_solverThread;
+        delete this->m_solver;
+        */
+    }
 
 	int width() const { return m_columns; }
 	void setWidth(const int &width) {
@@ -56,6 +86,10 @@ public:
 	Q_INVOKABLE void loadLevel(QString levelName);
 	Q_INVOKABLE void displayCircles();
 	Q_INVOKABLE void restart();
+    
+    Q_INVOKABLE bool canSolve();
+    Q_INVOKABLE void solve();
+    Q_INVOKABLE void abortSolve();
 
 	// Path drawing methods. Requires coordinates of grid, not mouse
 	Q_INVOKABLE void startPath(int x, int y);	// onPressed
@@ -64,11 +98,25 @@ public:
 	
 	Q_INVOKABLE QString colorAt(int x, int y);
 
+public slots:
+    void __showCircle(int x, int y, int color);
+    void __showLine(int x1, int y1, bool vertical, int color);
+    void __loadSolution();
+    void __solveFinished(int time);
+    
 signals:
-	void loadFinished();
 	void widthChanged(int);
 	void heightChanged(int);
 	void coveredPercentChanged(int);
+    
+    void loadFailed(QString message);
+    void loadFinished();
+    void noSolution();
+    void solveFinished(int time);
+    void __startSolverThread();
+    void __solverInit(int n, int m);
+    void __solverSetBoardColor(int x, int y, int color);
+    void __solverShowSolution();
 
 	void hideAll();
 	void ripple(int x, int y);
@@ -106,6 +154,9 @@ private:
 	int m_curColor, m_lastX, m_lastY, m_lastConPairs;
 	int *m_point, *m_color;
 	bool *m_occupy;
+    
+    QThread m_solverThread;
+    GameSolver m_solver;
 };
 
 #endif // GAMELOGIC_H

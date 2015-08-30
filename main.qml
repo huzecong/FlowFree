@@ -1,6 +1,6 @@
 import QtQuick 2.5
 
-FlowFreeMainView {
+MainView {
 	visible: true
 }
 
