@@ -84,9 +84,11 @@ ApplicationWindow {
 		// better set manually
 	
 	onSelectedLevelChanged: {
-		loader.sourceComponent = undefined
-		loader.sourceComponent = gameboardComponent
-		loader.active = true
+        if (selectedLevel != "") {
+            loader.sourceComponent = undefined
+            loader.sourceComponent = gameboardComponent
+            loader.active = true
+        }
 	}
 	
 	Component.onCompleted: setLevel()
@@ -137,9 +139,9 @@ ApplicationWindow {
 		title: qsTr("Solving...")
 //		text: qsTr("This may take a while")
 		negativeButtonText: qsTr("Abort")
-		positiveButton.visible: false
+        positiveButton.visible: false
 		
-		hasActions: false
+        hasActions: false
 		dismissOnTap: false
 		
 		property alias customText: label.text
@@ -475,6 +477,7 @@ ApplicationWindow {
 				onLoadFailed: {
 					loadFailedDialog.text = message
 					loadFailedDialog.show()
+                    main.selectedLevel = ""
 				}
 				
 				Snackbar {

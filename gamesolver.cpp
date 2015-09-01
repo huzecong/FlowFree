@@ -45,7 +45,7 @@ void GameSolver::solve() {
 	for (int i = 0; i < n; ++i)
 		for (int j = 0; j < m; ++j) {
 			int id = i * m + j;
-//			qDebug() << i << j << h[id].size();
+			qDebug() << i << j << h[id].size();
 			for (iter it = h[id].begin(); it != h[id].end(); ++it) {
 				State cur = it->first, _cur = cur;
 				if (j == 0) {
@@ -154,7 +154,7 @@ void GameSolver::solve() {
 			}
 		}
 	
-	qDebug() << "end" << h[n * m].size();
+	qDebug() << "end" << h[n * m].size() << this->timer.elapsed();
 	iter it = h[n * m].find(State(0ULL));
 	if (it != h[n * m].end()) {
 		State state(0ULL);

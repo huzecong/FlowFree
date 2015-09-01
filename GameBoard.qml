@@ -14,7 +14,11 @@ Item {
 	
 	property bool finished: false
 	
-	onLevelNameChanged: logic.loadLevel(levelName)
+    onLevelNameChanged: {
+        if (levelName != "") {
+            logic.loadLevel(levelName)
+        }
+    }
 	
 	signal pressed()
 	signal gameFinished()

@@ -468,12 +468,10 @@ void GameLogic::__solveFinished(int time) {
 
 void GameLogic::abortSolve() {
 	assert(false && "unimplemented");
-	/*
-	this->m_solverThread->terminate();
-	this->m_solverThread->wait();
-	delete this->m_solverThread;
-	this->m_solverThread = NULL;
-	delete this->m_solver;
-	this->m_solver = NULL;
-	*/
+
+	return;
+
+	this->m_solverThread.terminate();
+	this->m_solverThread.exit();
+	this->m_solverThread.quit();
 }
